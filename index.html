@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="api-key" content="%%API_KEY%%" />
+<title>BOUNDARY-X — Minimum-Change Security &amp; Resilience Analysis</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <section id="view-landing" class="view">
+    <div class="ambient-glow" aria-hidden="true"></div>
+    <nav class="nav">
+      <div class="brand"><span class="dot-shield">&#9679;</span> BOUNDARY-X</div>
+      <button class="nav-link" data-goto="dashboard">Dashboard</button>
+    </nav>
+
+    <div class="hero">
+      <div class="hero-copy fade-up" style="animation-delay:.05s">
+        <div class="eyebrow"><span class="pulse-dot"></span> Change-centric analysis</div>
+        <h1>Find the smallest change that can break your cloud —
+          <span class="accent">before production does.</span></h1>
+        <p>BOUNDARY-X compares your infrastructure before and after a change, isolates the one
+          modification that crossed a security or resilience boundary, and hands you the
+          smallest fix to restore it.</p>
+        <div class="cta-row">
+          <button class="btn btn-primary" data-goto="input">Analyze Changes <span class="arrow">&#8594;</span></button>
+          <button class="btn btn-ghost" data-goto="dashboard">View Dashboard</button>
+        </div>
+      </div>
+
+      <div class="hero-graph fade-up" style="animation-delay:.2s" aria-hidden="true">
+        <div class="chain-node" style="animation-delay:0s">Developer</div>
+        <div class="chain-edge"><span class="chain-particle" style="animation-delay:.3s"></span></div>
+        <div class="chain-node" style="animation-delay:.5s">CI/CD</div>
+        <div class="chain-edge"><span class="chain-particle" style="animation-delay:.8s"></span></div>
+        <div class="chain-node" style="animation-delay:1s">IAM</div>
+        <div class="chain-edge"><span class="chain-particle" style="animation-delay:1.3s"></span></div>
+        <div class="chain-node" style="animation-delay:1.5s">Application</div>
+        <div class="chain-edge"><span class="chain-particle" style="animation-delay:1.8s"></span></div>
+        <div class="chain-node" style="animation-delay:2s">Database</div>
+      </div>
+    </div>
+
+    <div class="stats-row fade-up" style="animation-delay:.35s">
+      <div class="stat"><div class="stat-val">12–20</div><div class="stat-label">Changes in typical PR</div></div>
+      <div class="stat"><div class="stat-val">1</div><div class="stat-label">Usually causal</div></div>
+      <div class="stat"><div class="stat-val">&lt; 1 min</div><div class="stat-label">Median time to isolate</div></div>
+    </div>
+  </section>
+
+  <template id="tpl-shell-header">
+    <div class="shell-header">
+      <button class="back-link" data-goto="landing">&#8592; BOUNDARY-X</button>
+      <div class="pr-tag">&#9670; PR #1843 · payments-api</div>
+    </div>
+    <!-- FIX: id removed so the template can be mounted into multiple views
+         without duplicate IDs breaking the result-view stepper -->
+    <div class="stepper"></div>
+  </template>
+
+  <section id="view-input" class="view">
+    <div class="shell">
+      <div id="input-header"></div>
+      <div class="fade-up">
+        <h2 class="h2">Analyze infrastructure change</h2>
+        <p class="sub">Run the sample pull request, or paste a real unified diff to ingest and analyze.</p>
+
+        <div class="source-tabs fade-up" id="source-tabs" style="animation-delay:.1s">
+          <button class="source-tab active" data-source="sample">Sample PR #1843</button>
+          <button class="source-tab" data-source="diff">Paste a diff</button>
+        </div>
+
+        <div id="sample-panel">
+          <div class="panel code-panel fade-up" style="animation-delay:.15s">
+            <div class="panel-head">
+              <span class="mono">iam.tf</span>
+              <span class="pill">terraform plan</span>
+            </div>
+            <pre id="diff-block" class="diff-block"></pre>
+          </div>
+
+          <div class="panel changes-panel fade-up" style="animation-delay:.2s">
+            <div class="panel-eyebrow">&#9776; All 17 changes in this PR</div>
+            <div id="changes-grid" class="changes-grid"></div>
+          </div>
+
+          <button class="btn btn-primary btn-block fade-up" style="animation-delay:.25s" data-goto="analyzing">Analyze Change <span class="arrow">&#8594;</span></button>
+        </div>
+
+        <div id="diff-paste-panel" class="hidden">
+          <div class="panel diff-input-panel fade-up" id="diff-dropzone" style="animation-delay:.15s">
+            <div class="panel-head">
+              <span class="mono">paste diff</span>
+              <div class="upload-inline">
+                <input type="file" id="diff-file-input" class="hidden" accept=".diff,.patch,.tf,.txt,.yaml,.yml,.json" />
+                <button id="upload-diff-btn" type="button" class="upload-btn" title="Upload a diff file">
+                  <span class="upload-icon">&#8593;</span> Upload file
+                </button>
+              </div>
+              <span class="pill">unified diff · git or plain</span>
+            </div>
+            <textarea id="diff-textarea" class="diff-textarea" spellcheck="false"
+              placeholder="diff --git a/iam.tf b/iam.tf
+--- a/iam.tf
++++ b/iam.tf
+@@ -6,7 +6,7 @@
+-          &quot;token.actions.githubusercontent.com:sub&quot; = &quot;repo:trusted-org/*&quot;
++          &quot;token.actions.githubusercontent.com:sub&quot; = &quot;repo:*&quot;"></textarea>
+            <div id="upload-filename" class="upload-filename hidden"></div>
+            <div class="dropzone-overlay" id="dropzone-overlay">
+              <div class="dropzone-overlay-inner"><span class="upload-icon-lg">&#8593;</span>Drop diff file to upload</div>
+            </div>
+          </div>
+          <div id="diff-error" class="diff-error hidden"></div>
+          <button id="parse-diff-btn" class="btn btn-ghost btn-block">Parse diff <span class="arrow">&#8594;</span></button>
+
+          <div id="diff-preview" class="hidden">
+            <div class="panel changes-panel fade-up">
+              <div class="panel-eyebrow" id="diff-preview-eyebrow">&#9776; Parsed changes</div>
+              <div id="diff-changes-grid" class="changes-grid"></div>
+            </div>
+            <button id="diff-analyze-btn" class="btn btn-primary btn-block fade-up" data-goto="analyzing">Analyze Change <span class="arrow">&#8594;</span></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="view-analyzing" class="view">
+    <div class="shell">
+      <div id="analyzing-header"></div>
+      <div class="analyzing-box fade-up">
+        <div class="running-tag"><span class="dot-cyan"><span class="ping"></span></span> Running analysis</div>
+        <div id="analysis-steps" class="analysis-steps"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="view-result" class="view">
+    <div class="shell">
+      <div id="result-header"></div>
+
+      <div id="stage-funnel" class="stage-block funnel-block fade-up">
+        <div class="funnel-tag">Searching for minimum causal change</div>
+        <div id="funnel-number" class="funnel-number">17</div>
+        <div id="funnel-caption" class="funnel-caption">changes detected</div>
+        <div id="funnel-dots" class="funnel-dots"></div>
+      </div>
+
+      <div id="stage-reveal" class="stage-block reveal-block hidden fade-up">
+        <div class="warn-icon">&#9888;</div>
+        <div class="reveal-tag">1 minimum causal change</div>
+        <h2 class="h2 center">Change #7 created the new production access path.</h2>
+        <p class="sub center">Widening the GitHub OIDC trust condition lets a workflow from <em>any</em> repository assume <span class="mono">prod-deploy-role</span>.</p>
+        <div class="panel diff-panel">
+          <div class="panel-head"><span class="mono small">iam.tf · line 9</span></div>
+          <div class="diff-lines">
+            <div class="diff-line diff-minus">- "repo:trusted-org/*"</div>
+            <div class="diff-line diff-plus">+ "repo:*"</div>
+          </div>
+        </div>
+        <button class="btn btn-primary center-btn" data-goto="result-stage-2">Trace attack path <span class="arrow">&#8594;</span></button>
+      </div>
+
+      <div id="stage-graph" class="stage-block hidden fade-up">
+        <div class="row-between">
+          <h3 class="h3">Attack path comparison</h3>
+          <div class="toggle-group" id="compare-toggle">
+            <button class="toggle-btn" data-mode="before">before</button>
+            <button class="toggle-btn active" data-mode="after">after</button>
+          </div>
+        </div>
+        <div class="panel graph-panel" id="graph-panel">
+          <svg id="attack-graph" viewBox="0 0 940 420"></svg>
+        </div>
+        <div id="graph-status" class="graph-status"></div>
+        <button class="btn btn-primary" data-goto="result-stage-3">View blast radius <span class="arrow">&#8594;</span></button>
+      </div>
+
+      <div id="stage-blast" class="stage-block hidden fade-up">
+        <h3 class="h3">Blast radius</h3>
+        <p class="sub">Scope of impact if this path were exploited.</p>
+        <div class="blast-grid">
+          <div class="blast-card"><div class="blast-icon">&#9635;</div><div class="blast-val" id="blast-res">0</div><div class="blast-label">resources affected</div></div>
+          <div class="blast-card"><div class="blast-icon warn">&#9889;</div><div class="blast-val" id="blast-crit">0</div><div class="blast-label">critical services</div></div>
+          <div class="blast-card"><div class="blast-icon danger">&#9724;</div><div class="blast-val" id="blast-data">0</div><div class="blast-label">sensitive datastore</div></div>
+          <div class="blast-card"><div class="blast-icon cyan">&#9673;</div><div class="blast-val" id="blast-flows">0</div><div class="blast-label">user workflows</div></div>
+        </div>
+        <button class="btn btn-primary" data-goto="result-stage-4">See minimum fix <span class="arrow">&#8594;</span></button>
+      </div>
+
+      <div id="stage-fix" class="stage-block reveal-block hidden fade-up">
+        <div id="fix-pre">
+          <div class="fix-tag">Recommended minimum fix</div>
+          <h2 class="h2">Restore the repository condition on the OIDC trust policy.</h2>
+          <div class="panel diff-panel">
+            <div class="panel-head"><span class="mono small">iam.tf · line 9</span></div>
+            <div class="diff-lines">
+              <div class="diff-line diff-minus">- "repo:*"</div>
+              <div class="diff-line diff-plus">+ "repo:trusted-org/*"</div>
+            </div>
+          </div>
+          <button id="apply-fix-btn" class="btn btn-safe btn-block">Apply minimum fix</button>
+        </div>
+        <div id="fix-post" class="hidden center">
+          <div class="success-circle">&#10003;</div>
+          <div class="restored-tag">Boundary restored</div>
+          <h2 class="h2 center">Production is safe again.</h2>
+          <div class="restored-list">
+            <div class="restored-item">&#10003; Attack path removed</div>
+            <div class="restored-item">&#10003; Production access restricted</div>
+            <div class="restored-item">&#10003; Boundary restored</div>
+          </div>
+          <div class="panel graph-panel small-graph fade-up">
+            <svg id="attack-graph-final" viewBox="0 0 940 420"></svg>
+          </div>
+          <div class="fix-post-actions">
+            <button id="download-report-btn" class="btn btn-ghost btn-block" type="button">
+              <span class="download-icon">&#8595;</span> Download report
+            </button>
+            <button class="btn btn-primary center-btn" data-goto="dashboard">Back to dashboard <span class="arrow">&#8594;</span></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="view-dashboard" class="view">
+    <div class="shell">
+      <div class="shell-header fade-up">
+        <button class="back-link" data-goto="landing"><span class="dot-shield">&#9679;</span> BOUNDARY-X</button>
+        <button class="btn btn-primary btn-small" data-goto="input">Analyze Changes <span class="arrow">&#8594;</span></button>
+      </div>
+
+      <h2 class="h2 fade-up">Security posture</h2>
+      <div class="posture-grid fade-up" style="animation-delay:.1s">
+        <div class="posture-card"><div class="posture-icon">&#128274;</div><div class="posture-val">24</div><div class="posture-label">Security boundaries</div></div>
+        <div class="posture-card"><div class="posture-icon">&#8982;</div><div class="posture-val">11</div><div class="posture-label">Resilience boundaries</div></div>
+        <div class="posture-card"><div class="posture-icon danger">&#9888;</div><div class="posture-val">2</div><div class="posture-label">Critical findings</div></div>
+        <div class="posture-card"><div class="posture-icon">&#8599;</div><div class="posture-val">312</div><div class="posture-label">Changes analyzed (30d)</div></div>
+      </div>
+
+      <div class="row-between fade-up" style="animation-delay:.15s">
+        <h2 class="h2" style="margin-bottom:0">Live infra snapshot</h2>
+        <button id="snapshot-refresh-btn" class="btn btn-ghost btn-small"><span class="refresh-icon">&#8635;</span> Refresh</button>
+      </div>
+      <p class="sub fade-up" style="animation-delay:.2s">Current deployed state, pulled live and compared against the known-good baseline.</p>
+      <div class="panel snapshot-panel fade-up" id="snapshot-panel" style="animation-delay:.25s">
+        <div id="snapshot-body">Loading snapshot&hellip;</div>
+      </div>
+
+      <h2 class="h2 fade-up" style="animation-delay:.3s">Recent analyses</h2>
+      <div id="recent-list" class="recent-list fade-up" style="animation-delay:.35s"></div>
+    </div>
+  </section>
+
+<script src="script.js"></script>
+</body>
+</html>
